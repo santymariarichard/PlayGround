@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101619">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='5' fill='%23111a1e'/%3E%3Ctext x='11' y='29' fill='%23f3f2ed' font-family='Georgia' font-size='27'%3EC%3C/text%3E%3C/svg%3E">
+  <title>CASEFILE — Major Crimes Bureau</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="Casefile home">
+        <span class="brand-mark">C<span>•</span></span>
+        <span class="brand-copy"><strong>CASEFILE</strong><small>MAJOR CRIMES BUREAU</small></span>
+      </a>
+      <div class="sidebar-rule"></div>
+      <div class="nav-label">INVESTIGATION</div>
+      <button class="nav-item active" id="nav-cases"><span class="nav-icon">▤</span> Case archive <span class="nav-count" id="nav-count">100</span></button>
+      <button class="nav-item" id="nav-unsolved"><span class="nav-icon">◷</span> Unsolved <span class="nav-count" id="unsolved-count">100</span></button>
+      <button class="nav-item" id="nav-solved"><span class="nav-icon">✓</span> Closed cases</button>
+      <div class="sidebar-bottom">
+        <div class="shift-card"><div class="shift-top"><span class="live-dot"></span> ON DUTY <span class="shift-time">NIGHT SHIFT</span></div><p>Every detail matters.<br>Trust the evidence.</p><div class="shift-line"><span>YOUR RECORD</span><strong id="record-mini">0 / 100</strong></div><div class="mini-progress"><span id="mini-progress"></span></div></div>
+        <div class="profile"><div class="avatar">D</div><div><strong>Detective</strong><small>New assignment</small></div><span class="profile-more">···</span></div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar"><div class="breadcrumb"><span>MAJOR CRIMES</span><b>/</b><strong id="crumb-current">CASE ARCHIVE</strong></div><div class="top-right"><span class="desk-status"><i></i> SECURE CONNECTION</span><span class="top-divider"></span><span class="date-stamp" id="date-stamp">PRECINCT 09</span><button class="icon-button" id="help-button" aria-label="How to play">?</button></div></header>
+      <section id="archive-view" class="view">
+        <div class="archive-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> THE COLD CASE UNIT</div><h1>Case archive<span class="title-period">.</span></h1><p class="subtitle">A hundred files. A hundred unanswered questions. Find the truth.</p></div><div class="archive-seal"><span>MCB</span><small>EST.<br>1987</small></div></div>
+        <div class="stats-row"><div class="stat-card"><span class="stat-icon">▤</span><div><small>ACTIVE FILES</small><strong>100</strong></div><span class="stat-note">Ready for review</span></div><div class="stat-card"><span class="stat-icon teal">✓</span><div><small>CASES CLOSED</small><strong id="solved-stat">0</strong></div><span class="stat-note" id="solved-note">Your record starts here</span></div><div class="stat-card"><span class="stat-icon gold">⌁</span><div><small>ACCURACY</small><strong id="accuracy-stat">—</strong></div><span class="stat-note">Evidence-led work</span></div></div>
+        <div class="archive-toolbar"><div class="toolbar-title"><h2>All case files</h2><span id="showing-count">100 FILES</span></div><div class="toolbar-controls"><label class="search-box"><span>⌕</span><input id="search-input" type="search" placeholder="Search cases, victims..." autocomplete="off"><kbd>⌘ K</kbd></label><select id="sort-select" aria-label="Sort cases"><option value="number">Case number</option><option value="title">Case title</option><option value="victim">Victim name</option><option value="unsolved">Unsolved first</option></select></div></div>
+        <div class="case-grid" id="case-grid" aria-live="polite"></div>
+        <div class="archive-footer"><span><i class="footer-dot"></i> ARCHIVE UPDATED 03:42 AM</span><span>CLASSIFIED · INTERNAL USE ONLY</span></div>
+      </section>
+
+      <section id="case-view" class="view hidden">
+        <button class="back-link" id="back-button"><span>←</span> Back to archive</button>
+        <div class="case-hero"><div class="case-hero-main"><div class="eyebrow"><span class="eyebrow-line"></span><span id="detail-kicker">CASE 001 · OPEN INVESTIGATION</span></div><h1 id="detail-title">The Last Call<span class="title-period">.</span></h1><p class="case-deck" id="detail-deck"></p></div><div class="case-stamp"><span id="detail-number">001</span><small>CASE<br>FILE</small></div></div>
+        <div class="case-meta" id="case-meta"></div>
+        <div class="case-layout"><div class="dossier-column"><div class="tab-bar" id="tab-bar"><button class="tab active" data-tab="overview">Overview <span>01</span></button><button class="tab" data-tab="evidence">Evidence <span>04</span></button><button class="tab" data-tab="reports">Reports <span>03</span></button></div><div id="document-content"></div><div class="hint-box"><div class="hint-symbol">✳</div><div class="hint-copy"><strong>Need a nudge?</strong><p id="hint-text">The evidence is all here. Look for what doesn't add up.</p></div><button id="hint-button" class="hint-button">Reveal a hint <span>→</span></button></div></div>
+          <aside class="solve-column"><div class="solve-card"><div class="solve-card-head"><div><div class="eyebrow">YOUR CONCLUSION</div><h3>Who did it?</h3></div><span class="target-icon">◎</span></div><p class="solve-intro">Review the file and name your suspect. The truth is in the details.</p><label class="field-label" for="suspect-select">SELECT A SUSPECT</label><div class="select-wrap"><select id="suspect-select"><option value="">Choose suspect...</option></select><span>⌄</span></div><div class="suspect-clues" id="suspect-clues"></div><button class="submit-button" id="submit-guess" disabled>Submit accusation <span>→</span></button><div class="feedback" id="feedback" aria-live="polite"></div><div class="case-progress"><span>CASE PROGRESS</span><span id="case-progress-label">1 OF 100</span></div><div class="progress-track"><span id="case-progress-bar"></span></div><div class="case-switch"><button id="prev-case" aria-label="Previous case">←</button><button id="next-case">Next case <span>→</span></button></div></div><div class="notebook-note"><span>✎</span><div><strong>Detective's note</strong><p>Check alibis against the timeline. A witness can lie, but facts leave a trail.</p></div></div></aside></div>
+      </section>
+      <footer class="app-footer"><span>CASEFILE <b>•</b> MCB DATABASE v4.8.2</span><span>THE TRUTH IS IN THE DETAILS.</span></footer>
+    </main>
+  </div>
+  <div class="modal-backdrop hidden" id="help-modal"><div class="help-modal"><button class="modal-close" id="close-help" aria-label="Close">×</button><div class="eyebrow"><span class="eyebrow-line"></span> FIELD GUIDE</div><h2>Read the room.<br>Read the reports.</h2><p>Each file contains an overview, evidence, and official reports. Cross-check what people say with what the physical evidence proves.</p><ol><li><b>Examine the file.</b> Read each document and note contradictions.</li><li><b>Make your call.</b> Select the suspect whose story conflicts with the evidence.</li><li><b>Close the case.</b> Correct accusations build your record. You can retry a case if you get it wrong.</li></ol><button class="submit-button" id="got-it">Understood <span>→</span></button></div></div>
+  <script src="game.js"></script>
+</body>
+</html>
