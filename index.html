@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101619">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2317201f' stroke='%23eab35b'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='serif' font-size='20' fill='%23eab35b'%3ELL%3C/text%3E%3C/svg%3E">
+  <title>Lockup Lunch — Warden's Kitchen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Rye&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <canvas id="kitchen" aria-hidden="true"></canvas>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Lockup Lunch home"><span class="brand-mark">LL</span><span>LOCKUP <b>LUNCH</b><small>WARDEN'S KITCHEN · BLOCK C</small></span></a>
+      <div class="shift-label"><span class="live-dot"></span> DINNER SHIFT <span class="shift-divider">/</span> <span id="shift-time">00:00</span></div>
+      <div class="top-stats"><div class="stat"><span class="stat-icon coin">¢</span><span><small>PAYOFF</small><b id="cash">000</b></span></div><div class="stat"><span class="stat-icon star">★</span><span><small>REPUTATION</small><b id="rep">0</b></span></div><div class="stat lives-stat"><span class="stat-icon heart">♥</span><span><small>STRIKES</small><b id="lives">♥ ♥ ♥</b></span></div><button id="sound-toggle" class="sound-toggle" aria-label="Toggle sound">♫</button></div>
+    </header>
+    <section class="game-area">
+      <div class="side-column left-column">
+        <section class="panel ticket-panel">
+          <div class="panel-heading"><span>ON THE LINE</span><span class="ticket-count" id="ticket-number">TICKET 01</span></div>
+          <div id="customer-portrait" class="portrait"><span class="portrait-silhouette">♟</span><span class="portrait-name">NEW ARRIVAL</span></div>
+          <div class="order-title"><small>THEY'RE HUNGRY FOR</small><h1 id="meal-name">Bean &amp; Banger Stew</h1></div>
+          <div class="order-recipe" id="recipe-list"></div>
+          <div class="ticket-footer"><span>TIME TO SERVE</span><b><span id="order-timer">35</span><small>SEC</small></b></div>
+          <div class="timer-track"><i id="timer-fill"></i></div>
+        </section>
+        <div class="tip-card"><span class="tip-bulb">✦</span><span><b>WARDEN'S NOTE</b><small id="tip-text">Get the recipe right for a clean plate bonus.</small></span></div>
+      </div>
+      <div class="scene-label"><span class="scene-tag">KITCHEN 03</span><span>THE YARD'S WATCHING</span></div>
+      <div class="side-column right-column">
+        <section class="panel station-panel">
+          <div class="panel-heading"><span>THE POT</span><span class="heat-status"><i id="heat-dot"></i><span id="heat-label">COLD</span></span></div>
+          <div class="pot-window" id="pot-window"><div class="pot-steam" id="pot-steam"><i></i><i></i><i></i></div><div class="pot-art"><span id="pot-food">∅</span></div><span class="pot-empty-label" id="pot-label">EMPTY POT</span></div>
+          <div class="pot-meter"><span id="pot-status">READY WHEN YOU ARE</span><div class="cook-track"><i id="cook-fill"></i></div></div>
+          <div id="pot-contents" class="pot-contents"><span class="empty-hint">Pick ingredients below</span></div>
+          <button class="action-button cook-button" id="cook-button"><span class="button-icon">♨</span><span id="action-label">LIGHT THE BURNER</span><span class="button-arrow">→</span></button>
+          <button class="serve-button" id="serve-button" hidden>PLATE IT &amp; SERVE <span>↗</span></button>
+          <button class="reset-button" id="clear-button">CLEAR THE POT</button>
+        </section>
+        <div class="combo-badge" id="combo-badge"><span>✦</span><b id="combo-text">FIRST SERVICE</b></div>
+      </div>
+      <div class="workbench" aria-hidden="false"><div class="bench-edge"></div><div class="cutting-board"><div class="board-groove"></div><div class="board-label">PREP TABLE <span>✦</span></div></div><div class="board-food" id="board-food"><span class="board-placeholder">Your prep space</span></div></div>
+    </section>
+    <footer class="inventory-bar">
+      <div class="inventory-title"><span>THE LARDER</span><small>CLICK TO ADD TO POT</small></div>
+      <div class="ingredient-list" id="ingredient-list"></div>
+      <div class="inventory-key"><kbd>1</kbd>–<kbd>6</kbd> <span>QUICK SELECT</span></div>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="overlay" id="start-overlay">
+      <div class="intro-card"><div class="intro-stamp">BLOCK C · EST. 1894</div><div class="intro-mark">LL</div><h2>LOCKUP<br><em>LUNCH</em></h2><p>The yard's got a rumble in its belly.<br>Keep the pot hot and the warden happy.</p><div class="intro-rule"></div><div class="intro-instructions"><span><b>01</b> Pick the right ingredients</span><span><b>02</b> Fire up the pot</span><span><b>03</b> Serve before time runs out</span></div><button id="start-button" class="start-button">START YOUR SHIFT <span>→</span></button><small class="intro-foot">NO ONE EATS FOR FREE.</small></div>
+    </div>
+    <div class="overlay hidden" id="end-overlay"><div class="intro-card end-card"><div class="intro-stamp">SHIFT REPORT · BLOCK C</div><div class="end-icon" id="end-icon">✦</div><h2 id="end-title">SHIFT'S OVER</h2><p id="end-message">The yard remembers a good meal.</p><div class="end-score"><small>TOTAL PAYOFF</small><b id="final-score">000</b><small>REPUTATION <span id="final-rep">0</span></small></div><button id="restart-button" class="start-button">RUN IT BACK <span>↻</span></button><small class="intro-foot">THE POT NEVER SLEEPS.</small></div></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
