@@ -26,6 +26,13 @@
     const used = new Set([victim]);
     suspects.forEach((s,i) => { while (used.has(s.name)) s.name = `${pick(firstNames, hash(n*88+i*313+1))} ${pick(lastNames, hash(n*19+i*127+3))}${i ? '' : ' Jr.'}`; used.add(s.name); });
     const culprit = suspects[culpritIndex];
+    // Make the forensic trace a fair, deducible clue: exactly one suspect is tied to it.
+    suspects.forEach((suspect, i) => {
+      if (i === culpritIndex) return;
+      let alternate = pick(traceItems, hash(n * 431 + i * 73));
+      while (alternate === culprit.trace) alternate = pick(traceItems, traceItems.indexOf(alternate) + 1);
+      suspect.trace = alternate;
+    });
     const title = pick(caseTitles, n * 7 + Math.floor(n / 3)) + (n > caseTitles.length ? ` — File ${pad(n)}` : '');
     const place = pick(locations, seed >>> 8);
     const cause = pick(causes, seed >>> 14);
@@ -52,21 +59,26 @@
   const cases = Array.from({length:100},(_,i)=>makeCase(i+1));
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem('casefile-save-v1') || '{}') || {}; } catch (_) { saved = {}; }
-  if (!saved.solved) saved.solved = {};
-  if (!saved.attempts) saved.attempts = 0;
-  if (!saved.correct) saved.correct = 0;
+  if (!saved.solved || typeof saved.solved !== 'object') saved.solved = {};
+  saved.solved = Object.fromEntries(Object.entries(saved.solved).filter(([id, value]) => Number(id) >= 1 && Number(id) <= cases.length && value));
+  saved.attempts = Math.max(0, Number(saved.attempts) || 0);
+  saved.correct = Math.max(0, Number(saved.correct) || 0);
   let current = null, activeFilter = 'all', activeTab = 'overview', hintLevel = {};
   const $ = id => document.getElementById(id);
   const escapeHtml = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const persist = () => { try { localStorage.setItem('casefile-save-v1', JSON.stringify(saved)); } catch (_) {} updateStats(); };
   const updateStats = () => {
     const count = Object.keys(saved.solved).length;
+    const total = cases.length;
     $('solved-stat').textContent = count;
     $('solved-note').textContent = count ? `${count} file${count===1?'':'s'} resolved` : 'Your record starts here';
     $('accuracy-stat').textContent = saved.attempts ? `${Math.round(saved.correct / saved.attempts * 100)}%` : '—';
-    $('unsolved-count').textContent = 100-count;
-    $('record-mini').textContent = `${count} / 100`;
-    $('mini-progress').style.width = `${count}%`;
+    $('nav-count').textContent = total;
+    $('unsolved-count').textContent = total-count;
+    $('record-mini').textContent = `${count} / ${total}`;
+    $('mini-progress').style.width = `${count / total * 100}%`;
+    document.querySelector('.stat-card small').textContent = 'ACTIVE FILES';
+    document.querySelector('.stat-card strong').textContent = total;
   };
   const cardMarkup = c => {
     const closed = !!saved.solved[c.id];
@@ -87,8 +99,8 @@
   };
   const documentMarkup = (doc,index) => `<article class="document"><div class="document-header"><span class="document-type"><span class="doc-icon">${doc.icon}</span>${escapeHtml(doc.type)}</span><span class="document-date">${current.month} ${String(current.day).padStart(2,'0')} · MCB</span></div><h3>${escapeHtml(doc.title)}</h3>${doc.body.split('\n').map(line=>`<p>${escapeHtml(line)}</p>`).join('')}<span class="evidence-tag">FILED · ${pad(current.id)}-${String((activeTab==='overview'?0:activeTab==='evidence'?20:40)+index+1).padStart(2,'0')}</span></article>`;
   const overviewDocs = c => [
-    {icon:'▤',type:'CASE SUMMARY',title:'Incident overview',body:`${c.victim} was found dead at ${c.place} on ${c.month} ${String(c.day).padStart(2,'0')}. The scene was undisturbed, and there were no signs of forced entry. The case was reopened after new forensic results connected an item from the scene to one of four people close to the victim.`},
-    {icon:'⌖',type:'INVESTIGATOR’S BRIEF',title:'People of interest',body:`${c.suspects.map(s=>`${s.name} — ${s.role}. Claims to have been at ${s.alibi}.`).join('\n')}\n\nPossible motive under review: ${c.motive}. Compare each account with the lab findings and the witness timeline.`}
+    {icon:'▤',type:'CASE SUMMARY',title:'Incident overview',body:`${c.victim} was found dead at ${c.place} on ${c.month} ${String(c.day).padStart(2,'0')}. The cause was ${c.cause}. There were no signs of forced entry, and the scene suggests the victim knew their visitor. New forensic results connect an item from the scene to one of four people close to the victim.`},
+    {icon:'⌖',type:'INVESTIGATOR’S BRIEF',title:'People of interest',body:`${c.suspects.map(s=>`${s.name} — ${s.role}. Claims to have been at ${s.alibi}.`).join('\n')}\n\nPossible motive under review: ${c.motive}. The motive is not proof. Compare each account with the lab findings and the witness timeline.`}
   ];
   const renderDocs = () => {
     const docs = activeTab==='overview' ? overviewDocs(current) : activeTab==='evidence' ? current.evidence : current.reports;
@@ -102,7 +114,7 @@
     $('detail-title').innerHTML=`${escapeHtml(current.title)}<span class="title-period">.</span>`;
     $('detail-deck').textContent=`A night in ${current.month.toLowerCase()}. Four stories. One truth.`;
     $('detail-number').textContent=pad(id);
-    $('case-meta').innerHTML=[['VICTIM',current.victim],['LOCATION',current.place],['DATE',`${current.month} ${String(current.day).padStart(2,'0')}`],['CAUSE OF DEATH','UNDER REVIEW']].map(([a,b])=>`<div class="meta-item"><small>${a}</small><strong>${escapeHtml(b)}</strong></div>`).join('');
+    $('case-meta').innerHTML=[['VICTIM',current.victim],['LOCATION',current.place],['DATE',`${current.month} ${String(current.day).padStart(2,'0')}`],['CAUSE OF DEATH',current.cause]].map(([a,b])=>`<div class="meta-item"><small>${a}</small><strong>${escapeHtml(b)}</strong></div>`).join('');
     const options=current.suspects.map((s,i)=>`<option value="${i}">${escapeHtml(s.name)} — ${escapeHtml(s.role)}</option>`).join('');
     $('suspect-select').innerHTML=`<option value="">Choose suspect...</option>${options}`;
     $('suspect-select').value=''; $('suspect-clues').textContent=''; $('submit-guess').disabled=true;
@@ -110,9 +122,10 @@
     $('feedback').className='feedback'+(saved.solved[id]?' correct':'');
     $('submit-guess').textContent=saved.solved[id]?'Case solved':'Submit accusation';
     $('submit-guess').disabled=!!saved.solved[id];
-    $('case-progress-label').textContent=`${Object.keys(saved.solved).length} OF 100`;
-    $('case-progress-bar').style.width=`${Object.keys(saved.solved).length}%`;
-    $('prev-case').disabled=id===1; $('next-case').innerHTML=id===100?'Archive <span>→</span>':'Next case <span>→</span>';
+    const solvedCount = Object.keys(saved.solved).length;
+    $('case-progress-label').textContent=`${solvedCount} OF ${cases.length}`;
+    $('case-progress-bar').style.width=`${solvedCount / cases.length * 100}%`;
+    $('prev-case').disabled=id===1; $('next-case').innerHTML=id===cases.length?'Archive <span>→</span>':'Next case <span>→</span>';
     $('hint-text').textContent=hintLevel[id] ? hintText(current,hintLevel[id]) : 'The evidence is all here. Look for what doesn’t add up.';
     $('hint-button').innerHTML=hintLevel[id]>=3?'Hint revealed':'Reveal a hint <span>→</span>';
     $('hint-button').disabled=hintLevel[id]>=3;
@@ -127,7 +140,7 @@
   $('submit-guess').addEventListener('click',()=>{
     if(!current||$('suspect-select').value===''||saved.solved[current.id])return;
     const guess=Number($('suspect-select').value); saved.attempts++; const feedback=$('feedback');
-    if(guess===current.culpritIndex){saved.correct++;saved.solved[current.id]=true;feedback.textContent=`Correct. ${current.suspects[guess].name} killed ${current.victim}. The evidence holds up.`;feedback.className='feedback correct';$('detail-kicker').textContent=`CASE ${pad(current.id)} · CLOSED INVESTIGATION`;$('submit-guess').disabled=true;$('submit-guess').textContent='Case solved';$('case-progress-label').textContent=`${Object.keys(saved.solved).length} OF 100`;$('case-progress-bar').style.width=`${Object.keys(saved.solved).length}%`;persist();}
+    if(guess===current.culpritIndex){saved.correct++;saved.solved[current.id]=true;feedback.textContent=`Correct. ${current.suspects[guess].name} killed ${current.victim}. The evidence holds up.`;feedback.className='feedback correct';$('detail-kicker').textContent=`CASE ${pad(current.id)} · CLOSED INVESTIGATION`;$('submit-guess').disabled=true;$('submit-guess').textContent='Case solved';const solvedCount=Object.keys(saved.solved).length;$('case-progress-label').textContent=`${solvedCount} OF ${cases.length}`;$('case-progress-bar').style.width=`${solvedCount / cases.length * 100}%`;persist();}
     else{feedback.textContent='That accusation doesn’t fit the evidence. Revisit the reports and try again.';feedback.className='feedback incorrect';persist();}
   });
   $('hint-button').addEventListener('click',()=>{if(!current)return;hintLevel[current.id]=Math.min(3,(hintLevel[current.id]||0)+1);$('hint-text').textContent=hintText(current,hintLevel[current.id]);if(hintLevel[current.id]>=3){$('hint-button').textContent='Hint revealed';$('hint-button').disabled=true;}});
